@@ -39,13 +39,13 @@ impl HttpHandler for Logger {
 }
 
 impl WebsocketHandler for Logger {
-    async fn on_start(&self, _session: &HttpSession, req: Request<()>) -> Request<()> {
+    async fn on_start(&mut self, _session: &HttpSession, req: Request<()>) -> Request<()> {
         debug!("{:?}", req);
         req
     }
 
     async fn on_client_message(
-        &self,
+        &mut self,
         _session: &WebSocketSession,
         message: Message,
     ) -> Option<Message> {
@@ -54,13 +54,15 @@ impl WebsocketHandler for Logger {
     }
 
     async fn on_server_message(
-        &self,
+        &mut self,
         _session: &WebSocketSession,
         message: Message,
     ) -> Option<Message> {
         debug!("{:?}", message);
         Some(message)
     }
+
+    async fn on_close(&mut self, _session: &WebSocketSession) {}
 }
 
 #[tokio::main]

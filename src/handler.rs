@@ -44,7 +44,7 @@ pub trait HttpHandler: Clone + Send + Sync + 'static {
 
 pub trait WebsocketHandler: Clone + Send + Sync + 'static {
     fn process_bidirection<T, Y>(
-        &self,
+        &mut self,
         session: &WebSocketSession,
         mut client: T,
         mut server: Y,
@@ -126,24 +126,22 @@ pub trait WebsocketHandler: Clone + Send + Sync + 'static {
     }
 
     fn on_start(
-        &self,
+        &mut self,
         _session: &HttpSession,
         req: Request<()>,
     ) -> impl Future<Output = Request<()>> + Send;
 
     fn on_client_message(
-        &self,
+        &mut self,
         _session: &WebSocketSession,
         message: Message,
     ) -> impl Future<Output = Option<Message>> + Send;
 
     fn on_server_message(
-        &self,
+        &mut self,
         _session: &WebSocketSession,
         message: Message,
     ) -> impl Future<Output = Option<Message>> + Send;
 
-    fn on_close(&self, _session: &WebSocketSession) -> impl Future<Output = ()> + Send {
-        async {}
-    }
+    fn on_close(&mut self, _session: &WebSocketSession) -> impl Future<Output = ()> + Send;
 }

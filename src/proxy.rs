@@ -320,7 +320,7 @@ where
 
     #[instrument(skip_all, name = "websocket")]
     async fn upgrade_websocket(
-        self,
+        mut self,
         req: Request<BoxBody<Bytes, Infallible>>,
     ) -> Response<BoxBody<Bytes, Infallible>> {
         let mut req = {
