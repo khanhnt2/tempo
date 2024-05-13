@@ -45,7 +45,7 @@ default = ["rust-tls"]
 rust-tls = [
     "dep:tokio-rustls",
     "dep:hyper-rustls",
-    "tokio-tungstenite/rustls-tls-native-roots",
+    "tokio-tungstenite/rustls-tls-webpki-roots",
 ]
 native-tls = [
     "dep:tokio-native-tls",
