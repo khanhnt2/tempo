@@ -1,0 +1,36 @@
+name: Test Suite
+
+on:
+    pull_request:
+    push:
+        branches:
+            - main
+
+env:
+    RUSTFLAGS: "-Dwarnings"
+
+jobs:
+    test:
+        name: Run tests
+        runs-on: ubuntu-latest
+        container:
+            image: rust:1.75.0
+        steps:
+            - uses: actions/checkout@v3
+            - name: Cache dependencies
+              uses: Swatinem/rust-cache@v2.7.3
+            - name: Build
+              run : |
+                cargo build
+            - name: Install clippy
+              run: |
+                rustup component add clippy
+            - name: Run cargo clippy
+              run: |
+                cargo clippy --all-targets
+            - name: Install rustfmt
+              run: |
+                rustup component add rustfmt
+            - name: Run cargo fmt
+              run: |
+                cargo fmt --all -- --check
