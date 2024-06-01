@@ -2,6 +2,7 @@ use std::convert::Infallible;
 use std::fs::File;
 use std::io::{BufReader, Error};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::pin::pin;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -15,10 +16,11 @@ use hyper_util::client::legacy::connect::HttpConnector;
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto;
+use hyper_util::server::graceful::GracefulShutdown;
 use rustls_pemfile as pemfile;
 use rustls_pki_types::{CertificateDer, PrivateKeyDer};
 use tokio::net::TcpListener;
-use tracing::error;
+use tracing::{error, info};
 use typed_builder::TypedBuilder;
 
 use crate::certificate::CertificateAuthority;
@@ -168,38 +170,61 @@ impl<H: HttpHandler, W: WebsocketHandler> ProxyServer<H, W> {
             .await
             .unwrap_or_else(|_| panic!("Cannot listen at {}", self.address));
         let http_client = self.new_http_client();
+        let mut builder = auto::Builder::new(TokioExecutor::new());
+        builder
+            .http1()
+            .preserve_header_case(true)
+            .title_case_headers(true);
+        builder.http2().enable_connect_protocol();
+        let graceful = GracefulShutdown::new();
+        let mut ctrl_c = pin!(tokio::signal::ctrl_c());
 
         loop {
-            let (stream, client_addr) = match listener.accept().await {
-                Ok((stream, client_addr)) => (stream, client_addr),
-                Err(err) => {
-                    error!("Failed to accept the connection: {err}");
-                    tokio::task::yield_now().await;
-                    continue;
-                }
-            };
-            let io = TokioIo::new(stream);
-            let handler = InternalHandler::new(
-                HttpSession::new(client_addr),
-                self.ca.clone(),
-                self.auth.clone(),
-                http_client.clone(),
-                self.http_handler.clone(),
-                self.websocket_handler.clone(),
-            );
+            tokio::select! {
+                conn = listener.accept() => {
+                    let (stream, client_addr) = match conn {
+                        Ok(conn) => conn,
+                        Err(err) => {
+                            error!("Failed to accept the connection: {err}");
+                            tokio::task::yield_now().await;
+                            continue;
+                        }
+                    };
+                    let stream = TokioIo::new(Box::pin(stream));
+                    let handler = InternalHandler::new(
+                        HttpSession::new(client_addr),
+                        self.ca.clone(),
+                        self.auth.clone(),
+                        http_client.clone(),
+                        self.http_handler.clone(),
+                        self.websocket_handler.clone(),
+                    );
 
-            tokio::spawn(async move {
-                let mut builder = auto::Builder::new(TokioExecutor::new());
-                builder
-                    .http1()
-                    .preserve_header_case(true)
-                    .title_case_headers(true);
-                builder.http2().enable_connect_protocol();
+                    let conn = builder.serve_connection_with_upgrades(stream, handler);
+                    let conn = graceful.watch(conn.into_owned());
 
-                if let Err(err) = builder.serve_connection_with_upgrades(io, handler).await {
-                    error!("Failed to serve connection: {err}")
+                    tokio::spawn(async move {
+                        if let Err(err) = conn.await {
+                            error!("Failed to serve connection: {err}")
+                        }
+                    });
+
+                },
+                _ = ctrl_c.as_mut() => {
+                    drop(listener);
+                    info!("Ctrl-C received, starting shutdown");
+                    break;
                 }
-            });
+            }
+        }
+
+        tokio::select! {
+            _ = graceful.shutdown() => {
+                info!("Gracefully shutdown!");
+            },
+            _ = tokio::time::sleep(Duration::from_secs(10)) => {
+                info!("Waited 10 seconds for graceful shutdown, aborting...");
+            }
         }
     }
 }

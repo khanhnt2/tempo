@@ -18,13 +18,15 @@ hyper-rustls = { version = "0.27.1", features = [
 ], optional = true }
 hyper-tls = { version = "0.6.0", features = ["alpn"], optional = true }
 hyper-tungstenite = "0.13"
-hyper-util = { version = "0.1", features = [
+hyper-util = { version = "0.1.5", features = [
     "client",
-    "server",
+    "client-legacy",
     "http1",
     "http2",
     "tokio",
-    "client-legacy",
+    "server",
+    "server-auto",
+    "server-graceful",
 ] }
 moka = { version = "0.12.7", features = ["future"] }
 rand = "0.8.5"

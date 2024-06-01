@@ -43,20 +43,20 @@ pub trait HttpHandler: Clone + Send + Sync + 'static {
 }
 
 pub trait WebsocketHandler: Clone + Send + Sync + 'static {
-    fn process_bidirection<T, Y>(
+    fn process_bidirection<C, S>(
         &mut self,
         session: &WebSocketSession,
-        mut client: T,
-        mut server: Y,
+        mut client: C,
+        mut server: S,
     ) -> impl Future<Output = ()> + Send
     where
-        T: Stream<Item = Result<Message, tungstenite::Error>>
+        C: Stream<Item = Result<Message, tungstenite::Error>>
             + Sink<Message, Error = tungstenite::Error>
             + FusedStream
             + Unpin
             + Send
             + 'static,
-        Y: Stream<Item = Result<Message, tungstenite::Error>>
+        S: Stream<Item = Result<Message, tungstenite::Error>>
             + Sink<Message, Error = tungstenite::Error>
             + FusedStream
             + Unpin
@@ -116,7 +116,7 @@ pub trait WebsocketHandler: Clone + Send + Sync + 'static {
                     }
                 };
                 if is_close {
-                    self.on_close(&session)
+                    self.on_close(session)
                         .instrument(info_span!("on_close"))
                         .await;
                     break;
