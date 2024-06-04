@@ -17,7 +17,7 @@ hyper-rustls = { version = "0.27.1", features = [
     "webpki-tokio",
 ], optional = true }
 hyper-tls = { version = "0.6.0", features = ["alpn"], optional = true }
-hyper-tungstenite = "0.13"
+hyper-tungstenite = "0.14"
 hyper-util = { version = "0.1.5", features = [
     "client",
     "client-legacy",
