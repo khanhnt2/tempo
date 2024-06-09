@@ -9,6 +9,19 @@ updates:
     open-pull-requests-limit: 99
     reviewers:
       - khanhnt2
+    groups:
+      tungstenite:
+        patterns:
+          - "hyper-tungstenite"
+          - "tokio-tungstenite"
+      rustls:
+        patterns:
+          - "tokio-rustls"
+          - "hyper-rustls"
+      native-tls:
+        patterns:
+          - "tokio-native-tls"
+          - "hyper-tls"
 
   - package-ecosystem: github-actions
     directory: "/"
