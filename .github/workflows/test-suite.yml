@@ -1,35 +1,52 @@
 name: Test Suite
 
 on:
-    pull_request:
-    push:
-        branches:
-            - main
+  pull_request:
+  push:
+    branches:
+      - main
+
+env:
+  RUSTFLAGS: "-D warnings"
+  RUST_VERSION: "1.78.0"
 
 jobs:
-    test:
-        name: Run tests
-        runs-on: ubuntu-latest
-        container:
-            image: rust:1.78.0
-        steps:
-            - uses: actions/checkout@v4
-            - name: Cache dependencies
-              uses: Swatinem/rust-cache@v2.7.3
-            - name: Build
-              run : |
-                cargo build
-            - name: Install clippy
-              run: |
-                rustup component add clippy
-            - name: Run cargo clippy
-              env:
-                RUSTFLAGS: "-Dwarnings"
-              run: |
-                cargo clippy --all-targets
-            - name: Install rustfmt
-              run: |
-                rustup component add rustfmt
-            - name: Run cargo fmt
-              run: |
-                cargo fmt --all -- --check
+  lints:
+    name: Lints 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          components: rustfmt, clippy
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Run cargo fmt
+        run: cargo fmt --all --check
+
+      - name: Run cargo clippy with default (rust-tls) feature
+        run: cargo clippy --example logger
+
+      - name: Run cargo clippy with native-tls feature
+        run: cargo clippy --example logger --features native-tls --no-default-features
+
+  build:
+    name: Build release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - name: Build release with default (rust-tls) feature 
+        run: cargo build --release --example logger
+
+      - name: Build release with native-tls feature 
+        run: cargo build --release --example logger --features native-tls --no-default-features
