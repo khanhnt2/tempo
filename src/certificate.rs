@@ -42,9 +42,9 @@ impl CertificateAuthority {
     }
 
     pub fn gen_cert(&self, host: &str) -> Vec<u8> {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let mut params = CertificateParams::default();
-        params.serial_number = Some(rng.gen::<u64>().into());
+        params.serial_number = Some(rng.random::<u64>().into());
 
         params.not_before = *CERT_NOT_BEFORE;
         params.not_after = *CERT_NOT_AFTER;
