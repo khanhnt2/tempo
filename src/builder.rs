@@ -1,6 +1,5 @@
 use std::convert::Infallible;
-use std::fs::File;
-use std::io::{BufReader, Error};
+use std::io::Error;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::pin::pin;
 use std::sync::Arc;
@@ -17,8 +16,8 @@ use hyper_util::client::legacy::Client;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto;
 use hyper_util::server::graceful::GracefulShutdown;
-use rustls_pemfile as pemfile;
-use rustls_pki_types::{CertificateDer, PrivateKeyDer};
+use rustls_pki_types::pem::PemObject;
+use rustls_pki_types::{CertificateDer, PrivateKeyDer, PrivatePkcs8KeyDer};
 use tokio::net::TcpListener;
 use tracing::{error, info};
 use typed_builder::TypedBuilder;
@@ -35,15 +34,16 @@ lazy_static! {
 }
 
 pub struct Certificate {
-    pub cert: String,
-    pub key: String,
+    pub cert: CertificateDer<'static>,
+    pub key: PrivatePkcs8KeyDer<'static>,
 }
 
 impl Default for Certificate {
     fn default() -> Self {
         Self {
-            cert: "ca/ByteDeflect.cer".to_string(),
-            key: "ca/ByteDeflect.key".to_string(),
+            cert: CertificateDer::from_slice(include_bytes!("../ca/ByteDeflect.cer")),
+            key: PrivatePkcs8KeyDer::from_pem_slice(include_bytes!("../ca/ByteDeflect.key"))
+                .expect("Can't parse ca/ByteDeflect.key file"),
         }
     }
 }
@@ -89,18 +89,8 @@ where
     pub fn build(self) -> Result<ProxyServer<H, W>, Error> {
         let this = self.__build();
         let address = SocketAddr::from((this.host, this.port));
-        let cert = pemfile::certs(&mut BufReader::new(File::open(
-            this.certificate.cert.clone(),
-        )?))
-        .next()
-        .expect("Cannot find root CA")
-        .expect("Failed to parse root CA");
-        let private_key = pemfile::pkcs8_private_keys(&mut BufReader::new(File::open(
-            this.certificate.key.clone(),
-        )?))
-        .next()
-        .expect("Cannot find private key")
-        .expect("Failed to parse private key");
+        let cert = this.certificate.cert;
+        let private_key = this.certificate.key;
 
         Ok(ProxyServer::new(
             address,
