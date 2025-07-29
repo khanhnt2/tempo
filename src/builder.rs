@@ -26,6 +26,7 @@ use crate::certificate::CertificateAuthority;
 use crate::handler::{HttpHandler, WebsocketHandler};
 use crate::proxy::InternalHandler;
 use crate::utils::HttpSession;
+use rustls_pemfile as pemfile;
 
 lazy_static! {
     static ref CLIENT_HTTP_KEEPALIVE: Duration = Duration::from_secs(60);
@@ -40,8 +41,17 @@ pub struct Certificate {
 
 impl Default for Certificate {
     fn default() -> Self {
+        let cert_der = match pemfile::read_one_from_slice(include_bytes!("../ca/ByteDeflect.cer"))
+            .expect("Failed to parse ByteDeflect.cer to X509Certificate")
+            .expect("Failed to parse ByteDeflect.cer to X509Certificate")
+            .0
+        {
+            pemfile::Item::X509Certificate(certificate_der) => certificate_der,
+            _ => panic!("Failed to parse ByteDeflect.cer to X509Certificate"),
+        };
+
         Self {
-            cert: CertificateDer::from_slice(include_bytes!("../ca/ByteDeflect.cer")),
+            cert: cert_der,
             key: PrivatePkcs8KeyDer::from_pem_slice(include_bytes!("../ca/ByteDeflect.key"))
                 .expect("Can't parse ca/ByteDeflect.key file"),
         }

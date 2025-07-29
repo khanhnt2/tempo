@@ -3,7 +3,8 @@ use std::sync::Arc;
 use moka::future::Cache;
 use rand::Rng;
 use rcgen::{
-    CertificateParams, DistinguishedName, DnType, Ia5String, KeyPair, KeyUsagePurpose, SanType,
+    string::Ia5String, CertificateParams, DistinguishedName, DnType, Issuer, KeyPair,
+    KeyUsagePurpose, SanType,
 };
 use rustls_pki_types::{CertificateDer, PrivateKeyDer};
 use time::{Duration, OffsetDateTime};
@@ -62,17 +63,13 @@ impl CertificateAuthority {
         params.key_usages.push(KeyUsagePurpose::KeyCertSign);
         params.key_usages.push(KeyUsagePurpose::CrlSign);
 
+        let key_pair =
+            KeyPair::try_from(&self.private_key.clone_key()).expect("Failed to parse private key");
+        let issuer =
+            Issuer::from_ca_cert_der(&self.cert, key_pair).expect("Failed to create the Issuer");
+
         let key_pair = KeyPair::try_from(&self.private_key).expect("Failed to parse private key");
-
-        let ca_cert_params = CertificateParams::from_ca_cert_der(&self.cert)
-            .expect("Failed to parse CA certificate");
-        let ca_cert = ca_cert_params
-            .self_signed(&key_pair)
-            .expect("Failed to generate CA certificate");
-
-        let cert = params
-            .signed_by(&key_pair, &ca_cert, &key_pair)
-            .expect("Failed to generate certificate");
+        let cert = params.signed_by(&key_pair, &issuer).unwrap();
 
         #[cfg(feature = "native-tls")]
         let cert = cert.pem().into_bytes();
