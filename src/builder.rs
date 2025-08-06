@@ -66,7 +66,7 @@ pub struct Authorization {
 
 #[derive(TypedBuilder)]
 #[builder(build_method(vis="", name=__build))]
-pub struct Proxy<H, W>
+pub struct Tempo<H, W>
 where
     H: HttpHandler,
     W: WebsocketHandler,
@@ -91,7 +91,7 @@ impl<
         __port: ::typed_builder::Optional<u16>,
         __certificate: ::typed_builder::Optional<Certificate>,
         __authorization: ::typed_builder::Optional<Option<Authorization>>,
-    > ProxyBuilder<H, W, ((H,), (W,), __host, __port, __certificate, __authorization)>
+    > TempoBuilder<H, W, ((H,), (W,), __host, __port, __certificate, __authorization)>
 where
     H: HttpHandler,
     W: WebsocketHandler,
