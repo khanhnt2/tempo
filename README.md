@@ -7,3 +7,12 @@ At that time, the author didn't upgrade Hyper framework to version 1 so I decide
 - Better memory management by using [Mimalloc](https://github.com/microsoft/mimalloc)
 - Better Websocket duplex channels capturing, works well on Binance
 - Support proxy authorization
+
+Check out `logger.rs` in the examples folder.
+
+## Installation
+I don't publish the project to crates.io since it's just my side-project in my spare time.
+```toml
+[dependencies]
+tempo = { git = "https://github.com/khanhnt2/tempo", tag = "2025.08.1" }
+```
