@@ -59,7 +59,7 @@ native-tls = [
 ]
 
 [dev-dependencies]
-tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 
 [[example]]
 name = "logger"
