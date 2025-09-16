@@ -14,5 +14,5 @@ Check out `logger.rs` in the examples folder.
 I don't publish the project to crates.io since it's just my side-project in my spare time.
 ```toml
 [dependencies]
-tempo = { git = "https://github.com/khanhnt2/tempo", tag = "2025.08.1" }
+tempo = { git = "https://github.com/khanhnt2/tempo", tag = "2025.09.1" }
 ```
