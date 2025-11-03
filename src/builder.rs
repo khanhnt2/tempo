@@ -1,4 +1,5 @@
 use std::convert::Infallible;
+use std::fs;
 use std::io::Error;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::pin::pin;
@@ -58,6 +59,29 @@ impl Default for Certificate {
     }
 }
 
+impl Certificate {
+    pub fn from_pem(cert_path: &str, key_path: &str) -> Self {
+        let cert_der = match pemfile::read_one_from_slice(
+            &fs::read(cert_path).unwrap_or_else(|_| panic!("Failed to read '{cert_path}' filde")),
+        )
+        .unwrap_or_else(|_| panic!("Failed to parse '{cert_path}' to X509Certificate"))
+        .unwrap_or_else(|| panic!("Failed to parse '{cert_path}' to X509Certificate"))
+        .0
+        {
+            pemfile::Item::X509Certificate(certificate_der) => certificate_der,
+            _ => panic!("Failed to parse '{cert_path}' to X509Certificate"),
+        };
+
+        Self {
+            cert: cert_der,
+            key: PrivatePkcs8KeyDer::from_pem_slice(
+                &fs::read(key_path).unwrap_or_else(|_| panic!("Failed to read '{key_path}' filde")),
+            )
+            .unwrap_or_else(|_| panic!("Can't parse {key_path} file")),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct Authorization {
     pub username: String,
@@ -83,18 +107,50 @@ where
     authorization: Option<Authorization>,
 }
 
-#[allow(non_camel_case_types)]
-impl<
-        H,
-        W,
-        __host: ::typed_builder::Optional<IpAddr>,
-        __port: ::typed_builder::Optional<u16>,
-        __certificate: ::typed_builder::Optional<Certificate>,
-        __authorization: ::typed_builder::Optional<Option<Authorization>>,
-    > TempoBuilder<H, W, ((H,), (W,), __host, __port, __certificate, __authorization)>
+#[allow(dead_code, non_camel_case_types, missing_docs)]
+impl<H, W, __host, __port, __certificate, __authorization>
+    TempoBuilder<H, W, ((H,), (W,), __host, __port, __certificate, __authorization)>
 where
     H: HttpHandler,
     W: WebsocketHandler,
+    Tempo<H, W>: for<'__typed_builder_lifetime_for_default> ::typed_builder::NextFieldDefault<
+        (
+            &'__typed_builder_lifetime_for_default H,
+            &'__typed_builder_lifetime_for_default W,
+            __host,
+        ),
+        Output = IpAddr,
+    >,
+    Tempo<H, W>: for<'__typed_builder_lifetime_for_default> ::typed_builder::NextFieldDefault<
+        (
+            &'__typed_builder_lifetime_for_default H,
+            &'__typed_builder_lifetime_for_default W,
+            &'__typed_builder_lifetime_for_default IpAddr,
+            __port,
+        ),
+        Output = u16,
+    >,
+    Tempo<H, W>: for<'__typed_builder_lifetime_for_default> ::typed_builder::NextFieldDefault<
+        (
+            &'__typed_builder_lifetime_for_default H,
+            &'__typed_builder_lifetime_for_default W,
+            &'__typed_builder_lifetime_for_default IpAddr,
+            &'__typed_builder_lifetime_for_default u16,
+            __certificate,
+        ),
+        Output = Certificate,
+    >,
+    Tempo<H, W>: for<'__typed_builder_lifetime_for_default> ::typed_builder::NextFieldDefault<
+        (
+            &'__typed_builder_lifetime_for_default H,
+            &'__typed_builder_lifetime_for_default W,
+            &'__typed_builder_lifetime_for_default IpAddr,
+            &'__typed_builder_lifetime_for_default u16,
+            &'__typed_builder_lifetime_for_default Certificate,
+            __authorization,
+        ),
+        Output = Option<Authorization>,
+    >,
 {
     pub fn build(self) -> Result<ProxyServer<H, W>, Error> {
         let this = self.__build();

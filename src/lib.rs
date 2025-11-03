@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 
+pub use bytes::Bytes;
 pub use http_body_util;
 pub use hyper;
 pub use hyper_tungstenite::tungstenite;

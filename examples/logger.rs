@@ -3,15 +3,14 @@ use std::{
     net::{IpAddr, Ipv4Addr},
 };
 
-use bytes::Bytes;
 use tempo::{
     handler::{HttpHandler, RequestOrResponse, WebsocketHandler},
     http_body_util::combinators::BoxBody,
     hyper::{Request, Response},
+    tungstenite::Message,
     utils::{HttpSession, WebSocketSession},
-    Tempo,
+    Bytes, Tempo,
 };
-use tokio_tungstenite::tungstenite::Message;
 use tracing::debug;
 use tracing_subscriber::EnvFilter;
 

@@ -8,11 +8,11 @@ on:
 
 env:
   RUSTFLAGS: "-D warnings"
-  RUST_VERSION: "1.86.0"
+  RUST_VERSION: "1.90.0"
 
 jobs:
   lints:
-    name: Lints 
+    name: Lints
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -45,8 +45,8 @@ jobs:
         with:
           toolchain: ${{ env.RUST_VERSION }}
 
-      - name: Build release with default (rust-tls) feature 
+      - name: Build release with default (rust-tls) feature
         run: cargo build --release --example logger
 
-      - name: Build release with native-tls feature 
+      - name: Build release with native-tls feature
         run: cargo build --release --example logger --features native-tls --no-default-features
