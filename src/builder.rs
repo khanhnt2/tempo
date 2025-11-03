@@ -12,8 +12,8 @@ use http_body_util::combinators::BoxBody;
 use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
 #[cfg(feature = "native-tls")]
 use hyper_tls::HttpsConnector;
-use hyper_util::client::legacy::connect::HttpConnector;
 use hyper_util::client::legacy::Client;
+use hyper_util::client::legacy::connect::HttpConnector;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto;
 use hyper_util::server::graceful::GracefulShutdown;
@@ -114,43 +114,43 @@ where
     H: HttpHandler,
     W: WebsocketHandler,
     Tempo<H, W>: for<'__typed_builder_lifetime_for_default> ::typed_builder::NextFieldDefault<
-        (
-            &'__typed_builder_lifetime_for_default H,
-            &'__typed_builder_lifetime_for_default W,
-            __host,
-        ),
-        Output = IpAddr,
-    >,
+            (
+                &'__typed_builder_lifetime_for_default H,
+                &'__typed_builder_lifetime_for_default W,
+                __host,
+            ),
+            Output = IpAddr,
+        >,
     Tempo<H, W>: for<'__typed_builder_lifetime_for_default> ::typed_builder::NextFieldDefault<
-        (
-            &'__typed_builder_lifetime_for_default H,
-            &'__typed_builder_lifetime_for_default W,
-            &'__typed_builder_lifetime_for_default IpAddr,
-            __port,
-        ),
-        Output = u16,
-    >,
+            (
+                &'__typed_builder_lifetime_for_default H,
+                &'__typed_builder_lifetime_for_default W,
+                &'__typed_builder_lifetime_for_default IpAddr,
+                __port,
+            ),
+            Output = u16,
+        >,
     Tempo<H, W>: for<'__typed_builder_lifetime_for_default> ::typed_builder::NextFieldDefault<
-        (
-            &'__typed_builder_lifetime_for_default H,
-            &'__typed_builder_lifetime_for_default W,
-            &'__typed_builder_lifetime_for_default IpAddr,
-            &'__typed_builder_lifetime_for_default u16,
-            __certificate,
-        ),
-        Output = Certificate,
-    >,
+            (
+                &'__typed_builder_lifetime_for_default H,
+                &'__typed_builder_lifetime_for_default W,
+                &'__typed_builder_lifetime_for_default IpAddr,
+                &'__typed_builder_lifetime_for_default u16,
+                __certificate,
+            ),
+            Output = Certificate,
+        >,
     Tempo<H, W>: for<'__typed_builder_lifetime_for_default> ::typed_builder::NextFieldDefault<
-        (
-            &'__typed_builder_lifetime_for_default H,
-            &'__typed_builder_lifetime_for_default W,
-            &'__typed_builder_lifetime_for_default IpAddr,
-            &'__typed_builder_lifetime_for_default u16,
-            &'__typed_builder_lifetime_for_default Certificate,
-            __authorization,
-        ),
-        Output = Option<Authorization>,
-    >,
+            (
+                &'__typed_builder_lifetime_for_default H,
+                &'__typed_builder_lifetime_for_default W,
+                &'__typed_builder_lifetime_for_default IpAddr,
+                &'__typed_builder_lifetime_for_default u16,
+                &'__typed_builder_lifetime_for_default Certificate,
+                __authorization,
+            ),
+            Output = Option<Authorization>,
+        >,
 {
     pub fn build(self) -> Result<ProxyServer<H, W>, Error> {
         let this = self.__build();

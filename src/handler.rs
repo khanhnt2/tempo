@@ -1,12 +1,12 @@
 use bytes::Bytes;
-use futures::{stream::FusedStream, Sink, SinkExt, Stream, StreamExt};
+use futures::{Sink, SinkExt, Stream, StreamExt, stream::FusedStream};
 use http_body_util::combinators::BoxBody;
 use hyper::{Request, Response};
 use std::{convert::Infallible, future::Future};
 use tokio_tungstenite::tungstenite::{self, Message};
-use tracing::{error, info_span, Instrument};
+use tracing::{Instrument, error, info_span};
 
-use crate::utils::{internal_error, HttpSession, WebSocketSession};
+use crate::utils::{HttpSession, WebSocketSession, internal_error};
 
 pub enum RequestOrResponse {
     Request(Request<BoxBody<Bytes, Infallible>>),

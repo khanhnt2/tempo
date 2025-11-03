@@ -3,15 +3,15 @@ use std::sync::Arc;
 use moka::future::Cache;
 use rand::Rng;
 use rcgen::{
-    string::Ia5String, CertificateParams, DistinguishedName, DnType, Issuer, KeyPair,
-    KeyUsagePurpose, SanType,
+    CertificateParams, DistinguishedName, DnType, Issuer, KeyPair, KeyUsagePurpose, SanType,
+    string::Ia5String,
 };
 use rustls_pki_types::{CertificateDer, PrivateKeyDer};
 use time::{Duration, OffsetDateTime};
 #[cfg(feature = "native-tls")]
-use tokio_native_tls::{native_tls, TlsAcceptor as NativeTlsAcceptor};
+use tokio_native_tls::{TlsAcceptor as NativeTlsAcceptor, native_tls};
 #[cfg(feature = "rust-tls")]
-use tokio_rustls::{rustls::ServerConfig, TlsAcceptor as RustlsAcceptor};
+use tokio_rustls::{TlsAcceptor as RustlsAcceptor, rustls::ServerConfig};
 #[cfg(feature = "native-tls")]
 type CacheData = Arc<NativeTlsAcceptor>;
 #[cfg(feature = "rust-tls")]

@@ -1,16 +1,16 @@
 use bytes::Bytes;
 use futures::Future;
-use http_body_util::{combinators::BoxBody, BodyExt, Full};
+use http_body_util::{BodyExt, Full, combinators::BoxBody};
 use hyper::{
+    Method, Request, Response, StatusCode, Version,
     body::Incoming,
     header::{self, Entry},
     http::uri::{Authority, Scheme, Uri},
     rt::{Read, Write},
-    service::{service_fn, Service},
-    Method, Request, Response, StatusCode, Version,
+    service::{Service, service_fn},
 };
 use hyper_util::{
-    client::legacy::{connect::Connect, Client},
+    client::legacy::{Client, connect::Connect},
     rt::{TokioExecutor, TokioIo},
     server::conn::auto,
 };
@@ -23,7 +23,7 @@ use crate::{
     certificate::CertificateAuthority,
     handler::{HttpHandler, RequestOrResponse, WebsocketHandler},
     rewind::Rewind,
-    utils::{bad_request, badgateway_error, empty, HttpSession, SupportedProtocol},
+    utils::{HttpSession, SupportedProtocol, bad_request, badgateway_error, empty},
 };
 
 #[derive(Clone)]
@@ -54,15 +54,14 @@ where
     fn call(&self, mut req: Request<Incoming>) -> Self::Future {
         // if the proxy enables authorization
         if let Some(auth) = &self.auth {
-            if let Some(value) = req.headers().get(header::PROXY_AUTHORIZATION) {
-                if let Ok(value) = value.to_str() {
-                    if let Ok(creds) = http_auth_basic::Credentials::from_str(value) {
-                        if creds.user_id == auth.username && creds.password == auth.password {
-                            req.headers_mut().remove(header::PROXY_AUTHORIZATION);
-                            return Box::pin(self.clone().proxy(req));
-                        }
-                    }
-                }
+            if let Some(value) = req.headers().get(header::PROXY_AUTHORIZATION)
+                && let Ok(value) = value.to_str()
+                && let Ok(creds) = http_auth_basic::Credentials::from_str(value)
+                && creds.user_id == auth.username
+                && creds.password == auth.password
+            {
+                req.headers_mut().remove(header::PROXY_AUTHORIZATION);
+                return Box::pin(self.clone().proxy(req));
             }
             Box::pin(async {
                 Ok(Response::builder()
@@ -123,7 +122,7 @@ where
                 return Ok(bad_request(format!(
                     "Failed to read request body: {:#?}",
                     err
-                )))
+                )));
             }
         };
 
@@ -164,7 +163,7 @@ where
                             return Ok(badgateway_error(format!(
                                 "Failed to read upstream response: {:#?}",
                                 err
-                            )))
+                            )));
                         }
                     };
 
@@ -232,13 +231,11 @@ where
                                             authority,
                                         )
                                         .await
-                                    {
-                                        if !e
+                                        && !e
                                             .to_string()
                                             .starts_with("error shutting down connection")
-                                        {
-                                            error!("HTTPS connection error: {e}");
-                                        }
+                                    {
+                                        error!("HTTPS connection error: {e}");
                                     }
                                 }
                                 (true, SupportedProtocol::WebSocket) => {
@@ -250,7 +247,10 @@ where
                                 }
                                 (_, SupportedProtocol::Unknown) | (false, _) => {
                                     if protocol == SupportedProtocol::Unknown {
-                                        warn!("Unsupport protocol, read '{:02X?}' from upgraded connection", &buffer[..bytes_read]);
+                                        warn!(
+                                            "Unsupport protocol, read '{:02X?}' from upgraded connection",
+                                            &buffer[..bytes_read]
+                                        );
                                     }
                                     let mut server =
                                         match TcpStream::connect(authority.as_ref()).await {

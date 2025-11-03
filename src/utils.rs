@@ -1,7 +1,7 @@
 use std::{convert::Infallible, net::SocketAddr};
 
 use bytes::Bytes;
-use http_body_util::{combinators::BoxBody, BodyExt, Empty, Full};
+use http_body_util::{BodyExt, Empty, Full, combinators::BoxBody};
 use hyper::{Response, StatusCode};
 use uuid::Uuid;
 
