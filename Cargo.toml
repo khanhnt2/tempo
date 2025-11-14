@@ -18,7 +18,7 @@ hyper-rustls = { version = "0.27.7", features = [
 ], optional = true }
 hyper-tls = { version = "0.6.0", features = ["alpn"], optional = true }
 hyper-tungstenite = "0.19.0"
-hyper-util = { version = "0.1.17", features = [
+hyper-util = { version = "0.1.18", features = [
     "client",
     "client-legacy",
     "http1",
