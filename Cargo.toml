@@ -28,7 +28,7 @@ hyper-util = { version = "0.1.19", features = [
     "server-auto",
     "server-graceful",
 ] }
-moka = { version = "0.12.11", features = ["future"] }
+moka = { version = "0.12.12", features = ["future"] }
 rand = "0.9.2"
 rcgen = { version = "0.14.6", features = ["x509-parser"] }
 rustls-pemfile = "2.1.2"
