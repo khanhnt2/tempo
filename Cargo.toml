@@ -9,7 +9,7 @@ edition = "2024"
 bstr = "1.12.1"
 bytes = "1.11.1"
 futures = "0.3.30"
-futures-util = "0.3.30"
+futures-util = "0.3.32"
 http-body-util = "0.1.1"
 hyper = "1.8.1"
 hyper-rustls = { version = "0.27.7", features = [
