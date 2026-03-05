@@ -39,7 +39,7 @@ tokio-native-tls = { version = "0.3", optional = true }
 tokio-rustls = { version = "0.26.3", optional = true }
 tokio-tungstenite = "0.28.0"
 tracing = "0.1.44"
-uuid = { version = "1.20.0", features = ["v4"] }
+uuid = { version = "1.21.0", features = ["v4"] }
 mimalloc = { version = "*" }
 http-auth-basic = "0.3.7"
 lazy_static = "1.4.0"
